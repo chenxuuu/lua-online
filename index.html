@@ -64,9 +64,9 @@
 
         flask.updateCode(decodeURI(location.search.substring(1)));
 
-        var luaResult = [];
         function luaPrint(s) {
-            luaResult.push(s);
+            var textarea = $("#output").append(s+"\n");
+            textarea.scrollTop(textarea[0].scrollHeight - textarea.height());
         }
 
         fengari.load(`
@@ -77,20 +77,19 @@ function print(...)
     for i=1,select('#', ...) do
         table.insert(out,tostring(select(i, ...)))
     end
-    js.global:luaPrint(table.concat(out))
-end`)();
+    js.global:luaPrint(table.concat(out,"\t"))
+end
+package.path = package.path..";/lua/?.lua"
+require("head")`)();
 
         function getResult() {
             var code = flask.getCode();
-            luaResult = [];
+            $("#output").text("");
             try {
                 fengari.load(code)();
-                if (luaResult.length == 0)
-                    luaResult.push("代码输出数据为空");
-                document.getElementById("output").innerHTML = luaResult.join("\r\n");
             }
             catch (err) {
-                document.getElementById("output").innerHTML = err.message;
+                luaPrint(err);
             }
         }
     </script>
