@@ -57,6 +57,8 @@
         });
         flask.addLanguage("lua", Prism.languages.lua);
 
+        flask.updateCode(decodeURI(location.search.substring(1)));
+
         var luaResult = [];
         function luaPrint(s) {
             luaResult.push(s);
