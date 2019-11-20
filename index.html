@@ -79,7 +79,7 @@ function print(...)
     end
     js.global:luaPrint(table.concat(out,"\t"))
 end
-package.path = package.path..";/lua/?.lua"
+package.path = package.path..";./lua/?.lua"
 require("head")`)();
 
         function getResult() {
