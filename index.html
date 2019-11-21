@@ -23,8 +23,8 @@
                 </h3>
                 <div class="alert alert-warning alert-dismissable">
                     <h4>注意</h4>
-                    每次运行时，Lua虚拟机并不会刷新，前一次的变量都会被保存。<br>
-                    如果需要重新运行，请复制代码后，刷新本页面。<br>
+                    每次运行时，Lua虚拟机并不会刷新，前一次的变量都会被保存。如果需要彻底重新运行，请保留代码后，刷新本页面。<br>
+                    除了打开别人分享的代码，其他代码都会自动保存在浏览器缓存，下次打开自动加载。<br>
                     Lua运行环境为Lua 5.3
                 </div>
             </div>
@@ -62,7 +62,16 @@
         });
         flask.addLanguage("lua", Prism.languages.lua);
 
-        flask.updateCode(decodeURI(location.search.substring(1)));
+        if(location.search != "")
+            flask.updateCode(decodeURI(location.search.substring(1))+"\r\n--此代码为分享代码，不会自动保存，关闭浏览器后即消失");
+        else if(localStorage.getItem("code") != null)
+        {
+            flask.updateCode(localStorage.getItem("code"));
+        }
+        if(location.search == "")
+            flask.onUpdate((code) => {
+                    localStorage.setItem("code",code);
+            });
 
         function luaPrint(s) {
             var textarea = $("#output").append(s+"\n");
