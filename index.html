@@ -82,7 +82,7 @@
         editor.on("change", function () {
             if (location.search == "")
                 localStorage.setItem("code", editor.getValue());
-            shareButton.setAttribute("data-clipboard-text", pageurl + "?" + encodeURI(editor.getValue()));
+            shareButton.setAttribute("data-clipboard-text", pageurl + "?" + encodeURI(editor.getValue()) + "%0d%0a");
         });
 
         if (location.search != ""){
