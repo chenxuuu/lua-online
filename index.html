@@ -46,7 +46,10 @@
                     运行结果：
                 </h3>
                 <textarea class="form-control" id="output"
-                    style="position: relative;width: 100%;height: 355px;">等待运行</textarea>
+                    style="position: relative;width: 100%;height: 317px;">等待运行</textarea>
+                <button class="btn btn-primary btn-block btn-outline-primary" id="d_clip_button" data-clipboard-text="">
+                    分享这段代码
+                </button>
             </div>
         </div>
     </div>
@@ -62,19 +65,24 @@
         });
         flask.addLanguage("lua", Prism.languages.lua);
 
-        if(location.search != "")
-            flask.updateCode(decodeURI(location.search.substring(1))+"\r\n--此代码为分享代码，不会自动保存，关闭浏览器后即消失");
-        else if(localStorage.getItem("code") != null)
-        {
+        var pageurl = window.location.href;
+        if(pageurl.indexOf("?") >= 0)
+            pageurl = pageurl.substring(0,pageurl.indexOf("?"));
+        var shareButton = document.getElementById("d_clip_button");
+        flask.onUpdate((code) => {
+            if (location.search == "")
+                localStorage.setItem("code", code);
+            shareButton.setAttribute("data-clipboard-text",pageurl+"?"+encodeURI(code));
+        });
+
+        if (location.search != "")
+            flask.updateCode(decodeURI(location.search.substring(1)) + "\r\n--此代码为分享代码，不会自动保存，关闭浏览器后即消失");
+        else if (localStorage.getItem("code") != null) {
             flask.updateCode(localStorage.getItem("code"));
         }
-        if(location.search == "")
-            flask.onUpdate((code) => {
-                    localStorage.setItem("code",code);
-            });
 
         function luaPrint(s) {
-            var textarea = $("#output").append(s+"\n");
+            var textarea = $("#output").append(s + "\n");
             textarea.scrollTop(textarea[0].scrollHeight - textarea.height());
         }
 
@@ -101,6 +109,18 @@ require("head")`)();
                 luaPrint(err);
             }
         }
+    </script>
+    <script type="text/javascript" src="js/clipboard.min.js"></script>
+    <script>
+        var btn = document.getElementById('d_clip_button');
+        var clipboard = new ClipboardJS(btn);
+
+        clipboard.on('success', function (e) {
+            alert("复制成功~粘贴即可分享代码链接");
+        });
+        clipboard.on('error', function (e) {
+            alert("复制失败了呢，你还是手动复制吧");
+        });
     </script>
 </body>
 
