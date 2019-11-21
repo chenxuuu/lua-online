@@ -86,7 +86,10 @@
         });
 
         if (location.search != ""){
-            editor.setValue(decodeURI(location.search.substring(1)));
+            var scode = location.search.substring(1);
+            if (scode.indexOf("&") >= 0)
+                scode = scode.substring(0,scode.indexOf("&"))
+            editor.setValue(decodeURI(scode));
             $("#saveText").text("当前代码为分享代码，不会自动保存，关闭浏览器后就会消失");
         }
         else if (localStorage.getItem("code") != null) {
