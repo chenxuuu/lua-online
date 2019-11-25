@@ -59,8 +59,8 @@
         </div>
     </div>
     <div style="text-align: center;"><a href="https://github.com/chenxuuu/lua-online" target="_blank">GitHub 源码</a>
+    <div id="qrcode"></div>
     </div>
-
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script>
@@ -131,11 +131,24 @@ require("head")`)();
         var clipboard = new ClipboardJS(btn);
 
         clipboard.on('success', function (e) {
-            alert("复制成功~粘贴即可分享代码链接");
+            alert("复制成功~粘贴即可分享代码链接\r\n下方的二维码也可用来分享");
+            qrcode.makeCode(shareButton.getAttribute("data-clipboard-text"));
         });
         clipboard.on('error', function (e) {
             alert("复制失败了呢，你还是手动复制吧");
         });
+    </script>
+    <script type="text/javascript" src="js/qrcode.js"></script>
+    <script>
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "https://chenxuuu.gitee.io/lua-online/",
+            width: 256,
+            height: 256,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.L
+        });
+        qrcode.clear(); // clear the code.
     </script>
     <script>
         var _hmt = _hmt || [];
