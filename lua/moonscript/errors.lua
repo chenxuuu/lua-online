@@ -1,5 +1,5 @@
 local util = require("moonscript.util")
-local lpeg = require("moonscript.lulpeg.lulpeg"):register(not _ENV and _G)
+local lpeg = require("moonscript.LuLPeg.lulpeg"):register(not _ENV and _G)
 local concat, insert
 do
   local _obj_0 = table

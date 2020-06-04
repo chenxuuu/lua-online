@@ -2,10 +2,10 @@ local safe_module
 safe_module = require("moonscript.util").safe_module
 local S, P, R, C
 do
-  local _obj_0 = require("moonscript.lulpeg.lulpeg"):register(not _ENV and _G)
+  local _obj_0 = require("moonscript.LuLPeg.lulpeg"):register(not _ENV and _G)
   S, P, R, C = _obj_0.S, _obj_0.P, _obj_0.R, _obj_0.C
 end
-local lpeg = require("moonscript.lulpeg.lulpeg"):register(not _ENV and _G)
+local lpeg = require("moonscript.LuLPeg.lulpeg"):register(not _ENV and _G)
 local L = lpeg.luversion and lpeg.L or function(v)
   return #v
 end

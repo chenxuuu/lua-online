@@ -1,5 +1,5 @@
 local debug_grammar = false
-local lpeg = require("moonscript.lulpeg.lulpeg"):register(not _ENV and _G)
+local lpeg = require("moonscript.LuLPeg.lulpeg"):register(not _ENV and _G)
 lpeg.setmaxstack(10000)
 local err_msg = "Failed to parse:%s\n [%d] >>    %s"
 local Stack
