@@ -30,7 +30,10 @@
                 </h3>
                 <div class="alert alert-warning alert-dismissable">
                     <h4>注意</h4>
-                    每次运行时，Lua虚拟机并不会刷新，前一次的变量都会被保存。如果需要彻底重新运行，请保留代码后，刷新本页面。<br>
+                    每次运行时，Lua虚拟机并不会刷新，前一次的变量都会被保存。如果需要彻底重新运行，请点击刷新按钮：
+                    <button class="btn btn-primary btn-outline-primary" onclick="newLuaState()">
+                        刷新虚拟机
+                    </button><br>
                     <span id="saveText">当前代码会自动保存在浏览器缓存，下次打开自动加载。</span><br>
                     Lua运行环境为Lua 5.3。集成moonscript，可直接require("moonscript")
                 </div>
@@ -51,7 +54,7 @@
                     运行结果：
                 </h3>
                 <textarea class="form-control" id="output" readonly="true"
-                    style="position: relative;width: 100%;height: 370px;">等待运行</textarea>
+                    style="position: relative;width: 100%;height: 370px;">虚拟机初始化中，请稍后。。。</textarea>
                 <button class="btn btn-primary btn-block btn-outline-primary" id="d_clip_button" data-clipboard-text="">
                     分享这段代码
                 </button>
@@ -63,12 +66,13 @@
     </div>
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/luaTask.js"></script>
     <script>
 
         var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            mode: "text/x-lua",    //实现lua代码高亮
-            lineNumbers: true,	//显示行号
-            theme: "mdn-like",	//设置主题
+            mode: "text/x-lua", //实现lua代码高亮
+            lineNumbers: true,  //显示行号
+            theme: "mdn-like",  //设置主题
             indentUnit: 4,
             indentWithTabs: true,
             matchBrackets: true,
@@ -101,7 +105,29 @@
             textarea.scrollTop(textarea[0].scrollHeight - textarea.height());
         }
 
-        fengari.load(`
+var lua
+
+function getResult() {
+    var code = editor.getValue();
+    $("#output").text("");
+    try {
+        var r = lua.doString(code);
+        if(!r.success) {
+            luaPrint("虚拟机报错：");
+            luaPrint(r.error);
+        }
+    }
+    catch (err) {
+        luaPrint("js环境报错：");
+        luaPrint(err);
+    }
+}
+
+function newLuaState() {
+    if(typeof(lua) != "undefined")
+        lua.clean();
+    lua = new LuaTask();
+    lua.doString(`
 js = require "js"
 --重写print函数
 function print(...)
@@ -112,18 +138,13 @@ function print(...)
     js.global:luaPrint(table.concat(out,"\t"))
 end
 package.path = "./lua/?.lua"
-require("head")`)();
+require("head")`);
+    $("#output").text("");
+    luaPrint("虚拟机初始化完毕");
+}
+newLuaState();
 
-        function getResult() {
-            var code = editor.getValue();
-            $("#output").text("");
-            try {
-                fengari.load(code)();
-            }
-            catch (err) {
-                luaPrint(err);
-            }
-        }
+
     </script>
     <script type="text/javascript" src="js/clipboard.min.js"></script>
     <script>
