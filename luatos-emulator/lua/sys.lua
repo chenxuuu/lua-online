@@ -286,11 +286,8 @@ function sys.trigger(param)
         timerPool[param] = nil
         if taskTimerPool[taskId] == param then
             taskTimerPool[taskId] = nil
-            local r,e = pcall(function()
             local r,i = coroutine.resume(taskId)
             assert(r,i)
-            end)
-            print("task cb",param,taskId,r,e)
         end
     else
         local cb = timerPool[param]

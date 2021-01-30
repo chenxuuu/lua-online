@@ -14,17 +14,17 @@ function luaTask_bindFn(fn,name) {
 function luaTask_luaStartTimer(L) {
     var id = fengari.lua.lua_tointeger(L,1);
     var ms = fengari.lua.lua_tointeger(L,2);
-    var timer = setTimeout((L) => {
-        fengari.lua.lua_getglobal(L, fengari.to_luastring("sysTriggerCB"));
-        fengari.lua.lua_pushinteger(L, id);
-        fengari.lua.lua_pushstring(L, fengari.to_luastring("timer"));
-        fengari.lua.lua_pushstring(L, fengari.to_luastring(""));
-        if(fengari.lua.lua_pcall(L,3,0,0))
+    var timer = setTimeout(() => {
+        fengari.lua.lua_getglobal(luaTask_L, fengari.to_luastring("sysTriggerCB"));
+        fengari.lua.lua_pushinteger(luaTask_L, id);
+        fengari.lua.lua_pushstring(luaTask_L, fengari.to_luastring("timer"));
+        fengari.lua.lua_pushstring(luaTask_L, fengari.to_luastring(""));
+        if(fengari.lua.lua_pcall(luaTask_L,3,0,0))
         {
             console.log("lua timer 回调报错：");
             console.log(fengari.lua.lua_tojsstring(luaTask_L, -1));
         }
-    }, ms,L);
+    }, ms);
     luaTask_timerPool[id] = {
         type: "timer",
         timer: timer,

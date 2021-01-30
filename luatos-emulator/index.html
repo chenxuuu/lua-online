@@ -45,15 +45,15 @@ sys.timerLoopStart(function()
     log.info("timestemp",os.time())
 end,1000)
 
-----新建任务，每休眠2000ms继续一次
---sys.taskInit(function()
---    local count = 0
---    while true do
---        sys.wait(2000)--等待2000ms
---        count = count + 1
---        log.info("task","运行了",count,"次")
---    end
---end)
+--新建任务，每休眠2000ms继续一次
+sys.taskInit(function()
+    local count = 0
+    while true do
+        sys.wait(2000)--等待2000ms
+        count = count + 1
+        log.info("task","运行了",count,"次")
+    end
+end)
 
 --运行lua task，只能调用一次，而且必须写在末尾
 sys.run()</textarea>
