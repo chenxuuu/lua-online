@@ -40,6 +40,9 @@
                     停止
                 </button>
                 <textarea class="form-control" id="luaCode" name="code">
+log = require("log")
+sys = require("sys")
+
 --启动一个定时器
 sys.timerLoopStart(function()
     log.info("timestemp",os.time())
