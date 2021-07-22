@@ -1,0 +1,81 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/mqtt/2.18.3/mqtt.min.js"></script>
+</head>
+
+<body>
+    <h1 align="center">远程控制</h1>
+    <div class="container">
+        <div class="row row-cols-3 ">
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button" onclick='pub("1")'>左翻</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button" onclick='pub("UP")'>↑</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button" onclick='pub("2")'>右翻</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button" onclick='pub("LEFT")'>←</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-danger" type="button" onclick='pub("OK")'>OK</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button" onclick='pub("RIGHT")'>→</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button" onclick='pub("A")'>A</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button" onclick='pub("DOWN")'>↓</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button" onclick='pub("B")'>B</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var imei = window.location.href;
+        if (imei.indexOf("?") >= 0)
+        imei = imei.substring(imei.indexOf("?")+1);
+        else
+            alert("imei获取失败，请关闭页面重新扫码");
+        console.log(imei);
+
+        var connected = false;
+        var client = mqtt.connect("ws://lbsmqtt.airm2m.com:8084/mqtt", {
+            clean: true,
+            connectTimeout: 4000,
+            clientId: 'adsaafssdf'+Math.random(),
+            username: 'user',
+            password: 'passward',
+        });
+        client.on('connect', (r) => {
+            console.log('已连接:', r);
+            connected = true;
+            //client.subscribe('magicbox/remote/');
+        });
+
+        client.on('error', (error) => {
+            console.log('连接失败:', error);
+        });
+
+        client.on('message', (topic, message) => {
+            console.log('收到消息：', topic, message.toString());
+        });
+
+        function pub(s){
+            console.log('发送事件', s);
+            if(connected)
+                client.publish("magicbox/control/"+imei,s);
+        }
+
+    </script>
+</body>
+
+</html>
