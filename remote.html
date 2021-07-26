@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.staticfile.org/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.staticfile.org/mqtt/2.18.3/mqtt.min.js"></script>
+    <script src="js/inflate.min.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -42,6 +43,11 @@
             </div>
         </div>
     </div>
+    <br>
+    <canvas id="screenCanvas" width="240" height="240"></canvas>
+    <div class="col d-grid">
+        <button class="btn btn-primary" type="button" onclick='pub("screen")'>手动刷新屏幕预览</button>
+    </div>
     <script>
         var imei = window.location.href;
         if (imei.indexOf("?") >= 0)
@@ -61,15 +67,37 @@
         client.on('connect', (r) => {
             console.log('已连接:', r);
             connected = true;
-            //client.subscribe('magicbox/remote/');
+            client.subscribe('magicbox/remote/'+imei+"/+");
+            client.publish("magicbox/control/"+imei,"screen");
         });
 
         client.on('error', (error) => {
             console.log('连接失败:', error);
         });
 
+        const toHexString = bytes =>
+            bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
         client.on('message', (topic, message) => {
-            console.log('收到消息：', topic, message.toString());
+            console.log('收到消息：', topic, message);
+            if(topic == "magicbox/remote/"+imei+"/screen")
+            {
+                var inflate = new Zlib.Inflate(message);
+                var plain = inflate.decompress();
+                console.log(plain);
+                var screenCanvas = document.getElementById('screenCanvas');
+                var screen = screenCanvas.getContext('2d');
+                for(var i=0;i<240*240;i++)
+                {
+                    var x = i % 240;
+                    var y = Math.floor(i/240);
+                    var color = plain[i*2] + plain[i*2+1] * 256;
+                    var r = (color >> (6+5)) << 3;
+                    var g = ((color >> 5) % (1<<6)) << 2;
+                    var b = (color % (1<<5)) << 3;
+                    screen.fillStyle = "rgb("+r+","+g+","+b+")";
+                    screen.fillRect (x,y, 1, 1);
+                }
+            }
         });
 
         function pub(s){
