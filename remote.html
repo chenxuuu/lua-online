@@ -51,10 +51,13 @@
     <script>
         var imei = window.location.href;
         if (imei.indexOf("?") >= 0)
-        imei = imei.substring(imei.indexOf("?")+1);
-        else
-            alert("imei获取失败，请关闭页面重新扫码");
-        console.log(imei);
+            imei = imei.substring(imei.indexOf("?")+1);
+        if(imei.length != 15)
+        {
+            window.location.href =
+                "http://chenxuuu.gitee.io/lua-online/remote.html?"+
+                prompt("imei不对，请手动输入imei：");
+        }
 
         var connected = false;
         var client = mqtt.connect("ws://lbsmqtt.airm2m.com:8084/mqtt", {
@@ -75,28 +78,43 @@
             console.log('连接失败:', error);
         });
 
+
+        function refresh(msg){
+            var inflate = new Zlib.Inflate(msg);
+            var plain = inflate.decompress();
+            var screenCanvas = document.getElementById('screenCanvas');
+            var screen = screenCanvas.getContext('2d');
+            for(var i=0;i<240*240;i++)
+            {
+                var x = i % 240;
+                var y = Math.floor(i/240);
+                var color = plain[i*2] + plain[i*2+1] * 256;
+                var r = (color >> (6+5)) << 3;
+                var g = ((color >> 5) % (1<<6)) << 2;
+                var b = (color % (1<<5)) << 3;
+                screen.fillStyle = "rgb("+r+","+g+","+b+")";
+                screen.fillRect (x*4,y*4, 4, 4);
+            }
+        }
+
+        var buff = [];
         const toHexString = bytes =>
             bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
         client.on('message', (topic, message) => {
             console.log('收到消息：', topic, message);
             if(topic == "magicbox/remote/"+imei+"/screen")
             {
-                var inflate = new Zlib.Inflate(message);
-                var plain = inflate.decompress();
-                console.log(plain);
-                var screenCanvas = document.getElementById('screenCanvas');
-                var screen = screenCanvas.getContext('2d');
-                for(var i=0;i<240*240;i++)
-                {
-                    var x = i % 240;
-                    var y = Math.floor(i/240);
-                    var color = plain[i*2] + plain[i*2+1] * 256;
-                    var r = (color >> (6+5)) << 3;
-                    var g = ((color >> 5) % (1<<6)) << 2;
-                    var b = (color % (1<<5)) << 3;
-                    screen.fillStyle = "rgb("+r+","+g+","+b+")";
-                    screen.fillRect (x*4,y*4, 4, 4);
-                }
+                refresh(message);
+            }
+            else if(topic.indexOf("magicbox/remote/"+imei+"/screen") == 0)
+            {
+                if(topic == "magicbox/remote/"+imei+"/screen1")
+                    buff = Array.from(message);
+                else if(topic == "magicbox/remote/"+imei+"/screen_end")
+                    refresh(Uint8Array.from(buff));
+                else
+                    buff = buff.concat(Array.from(message));
+
             }
         });
 
