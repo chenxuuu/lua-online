@@ -44,7 +44,7 @@
         </div>
     </div>
     <br>
-    <canvas id="screenCanvas" width="240" height="240"></canvas>
+    <canvas id="screenCanvas" width="960" height="960" style="width:240px;height:240px;"></canvas>
     <div class="col d-grid">
         <button class="btn btn-primary" type="button" onclick='pub("screen")'>手动刷新屏幕预览</button>
     </div>
@@ -95,7 +95,7 @@
                     var g = ((color >> 5) % (1<<6)) << 2;
                     var b = (color % (1<<5)) << 3;
                     screen.fillStyle = "rgb("+r+","+g+","+b+")";
-                    screen.fillRect (x,y, 1, 1);
+                    screen.fillRect (x*4,y*4, 4, 4);
                 }
             }
         });
