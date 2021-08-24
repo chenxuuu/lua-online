@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/mqtt/2.18.3/mqtt.min.js"></script>
+    <script src="js/inflate.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <h1 align="center">远程控制</h1>
+    <div class="container">
+        <div class="row row-cols-3 ">
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button"
+                ontouchstart='cs("f","l")' onmousedown='cs("f","l")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↖</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button"
+                ontouchstart='cs("f","s")' onmousedown='cs("f","s")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↑</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button"
+                ontouchstart='cs("f","r")' onmousedown='cs("f","r")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↗</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button"
+                ontouchstart='cs("s","l")' onmousedown='cs("s","l")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>←</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-danger" type="button"
+                ontouchstart='cs("s","s")' onmousedown='cs("s","s")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>停</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button"
+                ontouchstart='cs("s","r")' onmousedown='cs("s","r")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>→</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button"
+                ontouchstart='cs("b","l")' onmousedown='cs("b","l")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↙</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-success" type="button"
+                ontouchstart='cs("b","s")' onmousedown='cs("b","s")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↓</button>
+            </div>
+            <div class="col d-grid">
+                <button class="btn btn-primary" type="button"
+                ontouchstart='cs("b","r")' onmousedown='cs("b","r")' onmouseup='cs("s","s")' ontouchmove='cs("s","s")' ontouchend='cs("s","s")'>↘</button>
+            </div>
+        </div>
+    </div>
+    <br>
+    <canvas id="screenCanvas" width="960" height="960" style="width:240px;height:240px;"></canvas>
+    <div class="col d-grid">
+        <button class="btn btn-primary" type="button"></button>
+    </div>
+    <script>
+        var imei = window.location.href;
+        if (imei.indexOf("?") >= 0)
+            imei = imei.substring(imei.indexOf("?")+1);
+        if(imei.length != 15)
+        {
+            window.location.href =
+                "http://chenxuuu.gitee.io/lua-online/remote_car.html?"+
+                prompt("imei不对，请手动输入imei：");
+        }
+
+        var connected = false;
+        var client = mqtt.connect("ws://lbsmqtt.airm2m.com:8084/mqtt", {
+            clean: true,
+            connectTimeout: 4000,
+            clientId: 'adsaafssdf'+Math.random(),
+            username: 'user',
+            password: 'passward',
+        });
+        client.on('connect', (r) => {
+            console.log('已连接:', r);
+            connected = true;
+            //client.subscribe('magicbox/remote/'+imei+"/+");
+            //client.publish("magicbox/control/"+imei,"screen");
+        });
+
+        client.on('error', (error) => {
+            console.log('连接失败:', error);
+        });
+
+
+        function refresh(msg){
+            var inflate = new Zlib.Inflate(msg);
+            var plain = inflate.decompress();
+            var screenCanvas = document.getElementById('screenCanvas');
+            var screen = screenCanvas.getContext('2d');
+            for(var i=0;i<240*240;i++)
+            {
+                var x = i % 240;
+                var y = Math.floor(i/240);
+                var color = plain[i*2] + plain[i*2+1] * 256;
+                var r = (color >> (6+5)) << 3;
+                var g = ((color >> 5) % (1<<6)) << 2;
+                var b = (color % (1<<5)) << 3;
+                screen.fillStyle = "rgb("+r+","+g+","+b+")";
+                screen.fillRect (x*4,y*4, 4, 4);
+            }
+        }
+
+        var buff = [];
+        const toHexString = bytes =>
+            bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+        client.on('message', (topic, message) => {
+            console.log('收到消息：', topic, message);
+            if(topic == "magicbox/remote/"+imei+"/screen")
+            {
+                refresh(message);
+            }
+            else if(topic.indexOf("magicbox/remote/"+imei+"/screen") == 0)
+            {
+                if(topic == "magicbox/remote/"+imei+"/screen1")
+                    buff = Array.from(message);
+                else if(topic == "magicbox/remote/"+imei+"/screen_end")
+                    refresh(Uint8Array.from(buff));
+                else
+                    buff = buff.concat(Array.from(message));
+
+            }
+        });
+
+        var go = "s";
+        var way = "s";
+        var go_last = "s";
+        var way_last = "s";
+        function cs(g,w){
+            go = g;
+            way = w;
+        }
+
+        setInterval(function () {
+            if(way != way_last)
+            {
+                if(way == "l")
+                {
+                    client.publish("remote/"+imei,"right,off");
+                    client.publish("remote/"+imei,"left,on");
+                }
+                else if(way == "r")
+                {
+                    client.publish("remote/"+imei,"left,off");
+                    client.publish("remote/"+imei,"right,on");
+                }
+                else if(way == "s")
+                {
+                    client.publish("remote/"+imei,"left,off");
+                    client.publish("remote/"+imei,"right,off");
+                }
+            }
+            if(go != go_last && go == "s")
+            {
+                client.publish("remote/"+imei,"go,off");
+                client.publish("remote/"+imei,"back,off");
+            }
+
+            if(go == "f")
+            {
+                client.publish("remote/"+imei,"go,on");
+            }
+            else if(go == "b")
+            {
+                client.publish("remote/"+imei,"back,on");
+            }
+
+            way_last = way;
+            go_last = go;
+        },100);
+
+    </script>
+</body>
+
+</html>
