@@ -53,10 +53,7 @@
         </div>
     </div>
     <br>
-    <canvas id="screenCanvas" width="960" height="960" style="width:240px;height:240px;"></canvas>
-    <div class="col d-grid">
-        <button class="btn btn-primary" type="button"></button>
-    </div>
+    <img id="my-img" width="500"/>
     <script>
         var imei = window.location.href;
         if (imei.indexOf("?") >= 0)
@@ -79,51 +76,21 @@
         client.on('connect', (r) => {
             console.log('已连接:', r);
             connected = true;
-            //client.subscribe('magicbox/remote/'+imei+"/+");
-            //client.publish("magicbox/control/"+imei,"screen");
+            client.subscribe('photo/'+imei);
         });
 
         client.on('error', (error) => {
             console.log('连接失败:', error);
         });
 
-
-        function refresh(msg){
-            var inflate = new Zlib.Inflate(msg);
-            var plain = inflate.decompress();
-            var screenCanvas = document.getElementById('screenCanvas');
-            var screen = screenCanvas.getContext('2d');
-            for(var i=0;i<240*240;i++)
-            {
-                var x = i % 240;
-                var y = Math.floor(i/240);
-                var color = plain[i*2] + plain[i*2+1] * 256;
-                var r = (color >> (6+5)) << 3;
-                var g = ((color >> 5) % (1<<6)) << 2;
-                var b = (color % (1<<5)) << 3;
-                screen.fillStyle = "rgb("+r+","+g+","+b+")";
-                screen.fillRect (x*4,y*4, 4, 4);
-            }
-        }
-
-        var buff = [];
-        const toHexString = bytes =>
-            bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
         client.on('message', (topic, message) => {
             console.log('收到消息：', topic, message);
-            if(topic == "magicbox/remote/"+imei+"/screen")
+            if('photo/'+imei)
             {
-                refresh(message);
-            }
-            else if(topic.indexOf("magicbox/remote/"+imei+"/screen") == 0)
-            {
-                if(topic == "magicbox/remote/"+imei+"/screen1")
-                    buff = Array.from(message);
-                else if(topic == "magicbox/remote/"+imei+"/screen_end")
-                    refresh(Uint8Array.from(buff));
-                else
-                    buff = buff.concat(Array.from(message));
-
+                var buff = Uint8Array.from(Array.from(message));
+                document.getElementById('my-img').src = URL.createObjectURL(
+                    new Blob([buff.buffer], { type: 'image/jpeg' } )
+                    );
             }
         });
 
