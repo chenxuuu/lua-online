@@ -23,16 +23,11 @@ json = {
 loadstring = load
 
 pack = {
-    pack = string.pack,
-    unpack = function (s,f,h)
-        local t
-        if h then
-            t = table.pack(string.unpack(f,s:sub(h)))
-        else
-            t = table.pack(string.unpack(f,s))
-        end
-        table.insert(t,1,table.remove(t,#t))
-        return table.unpack(t)
+    pack = function ()
+        print("此环境为lua5.3，请使用string.pack代替pack.pack")
+    end,
+    unpack = function ()
+        print("此环境为lua5.3，请使用string.unpack代替pack.unpack")
     end,
 }
 
